@@ -50,6 +50,7 @@ class OO():
         return cards
 
     def card(self, cardid, seckey=None):
+        '''Returns the full card JSON'''
         if not seckey:
             raise Exception, "You need to provide your secret key for us to decrypt your data"
         self.apibase  = self.baseurl + "/" +  self.version
@@ -62,8 +63,6 @@ class OO():
 
         response = requests.request("GET", self.apibase + "/cards/" + cardid, headers=headers)
         if response.status_code == 200:
-            if response.json()['data'] == None:
-                return {'compat':'empty card'}
             return response.json()
 
 
