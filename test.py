@@ -1,6 +1,8 @@
 from oopyconnector import OO
 
 import datetime
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 
 seckey = "your_very_secret_key"
 o = OO()
@@ -36,12 +38,7 @@ print "Need SecKey (shown)",
 seckey = raw_input()
 
 c = o.card(cards[p]['id'],seckey)
-
-import json
-
-j = json.dumps(c)
-
-print c
+pp.pprint(c)
 
 
 
