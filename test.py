@@ -7,8 +7,6 @@ pp = pprint.PrettyPrinter(indent=4)
 seckey = "your_very_secret_key"
 o = OO()
 
-o.apikey='apikey'
-o.apisec='apisec'
 o.baseurl='http://apiteststand.onlyonce.com'
 
 print "              _                            "
@@ -20,6 +18,10 @@ print "                |___/                      "
 print ""
 print " Command line demonstration of the OO-API  "
 print ""
+print "Your API-Key   :",
+o.apikey=raw_input()
+print "Your API-Secret",
+o.apisec=raw_input()
 o.register()
 print " - registered at OOAPI and received bearer token"
 cards = o.cards()
@@ -39,6 +41,9 @@ seckey = raw_input()
 
 c = o.card(cards[p]['id'],seckey)
 pp.pprint(c)
+
+
+print c['id']
 
 
 

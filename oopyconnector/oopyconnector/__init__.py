@@ -22,6 +22,7 @@ class OO():
 
     bearer   = None
 
+
     def connect(self):
         self.apibase  = self.baseurl + "/" +  self.version
         if not self.bearer:
@@ -82,6 +83,11 @@ class OO():
         response = requests.request("POST", self.apibase + "/token", data=payload, headers=headers)
         self.bearer = response.headers['Authorization']
         return True
+
+
+    def parsecard(self, card, cast='StandardCard', castfail='abend'):
+
+        if model.hasKey('components')
 
 
 
