@@ -42,6 +42,9 @@ _Version_ : **Draft**
 ---
 
 # Get Token
+
+    oo.register()
+
 Function : *register()* - **Get your JWT Bearer Token**
 
 Make sure to set o.apikey and o.apisec before calling register(). The register function will set the Authorization Header in your request with the Bearer Token.
