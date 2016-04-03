@@ -7,6 +7,7 @@
 # Version       : 1.0beta
 
 import requests
+import datetime
 
 
 class OO():
@@ -22,6 +23,10 @@ class OO():
 
     bearer   = None
 
+    network  = []
+    cardsReceived = []
+
+    lastCardSync = None
 
     def connect(self):
         self.apibase  = self.baseurl + "/" +  self.version
@@ -29,26 +34,51 @@ class OO():
             raise Exception, "No bearer token present, use register first"
 
 
-    def cards(self):
+    def cardsAge(self):
+        '''Returns time since last cards-sync in seconds. Returns 9999 if no
+        sync has been performed yet'''
+        if lastCardSync == None:
+            return 9999
+        else:
+            return (datetime.datetime.now() - lastCardSync).seconds
+
+    def cards(self, maxAge=60):
         self.apibase  = self.baseurl + "/" +  self.version
-        '''Returns all cards shared with me'''
+        '''Returns all cards shared with me. Saves API calls by not refreshing
+        within maxAge seconds'''
 
-        headers = {
-            'content-type': "application/json",
-            'authorization': self.bearer,
-            'cache-control': "no-cache"
-        }
 
-        response = requests.request("GET", self.apibase + "/cards" , headers=headers)
-        j = response.json()
-        cards = []
-        for card in j['data']:
-            c = {}
-            c['owner'] = card['ownerId']
-            c['name'] = card['name']
-            c['id'] = card['id']
-            cards.append(c)
-        return cards
+        if self.cardsAge > maxAge:
+            headers = {
+                'content-type': "application/json",
+                'authorization': self.bearer,
+                'cache-control': "no-cache"
+            }
+
+            response = requests.request("GET", self.apibase + "/cards" , headers=headers)
+            j = response.json()
+            self.cardsReceived = []
+            for card in j['data']:
+                c = {}
+                c['owner'] = card['ownerId']
+                c['name'] = card['name']
+                c['id'] = card['id']
+                self.cardsReceived.append(c)
+            self.lastCardSync = datetime.datetime.now()
+
+        return self.cardsReceived
+
+    def connections(self):
+        '''Returns a list of all unique users who have shared data with you.
+        Returns empty list if no data shared with you, or you have not called 'cards' yet
+        '''
+        connections = []
+        for card in self.cardsReceived:
+            if card['owner'] not in connections:
+                connections.append(card['owner'])
+        return connections
+
+
 
     def card(self, cardid, seckey=None):
         '''Returns the full card JSON'''
@@ -84,10 +114,6 @@ class OO():
         self.bearer = response.headers['Authorization']
         return True
 
-
-    def parsecard(self, card, cast='StandardCard', castfail='abend'):
-
-        if model.hasKey('components')
 
 
 
