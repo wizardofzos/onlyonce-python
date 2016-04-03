@@ -27,23 +27,31 @@ print " - registered at OOAPI and received bearer token"
 cards = o.cards()
 print " - fetch all cards shared with me"
 
+keepgoing = True
 
-pos = 0
-for card in cards:
-    print "%s - %s" % (pos, card['name'])
-    pos += 1
+while keepgoing:
+    pos = 0
+    for card in cards:
+        print "%s - %s" % (pos, card['name'])
+        pos += 1
 
-print "What card to print",
-p = int(raw_input())
+    print "What card to print, X for exit",
+    p = raw_input()
+    if p == 'X':
+        keepgoing = False
+    else:
+        p = int(p)
+        print "Need SecKey (shown)",
+        seckey = raw_input()
 
-print "Need SecKey (shown)",
-seckey = raw_input()
 
-c = o.card(cards[p]['id'],seckey)
-pp.pprint(c)
+        c = o.card(cards[p]['id'],seckey)
+        pp.pprint(c)
+
+        pp.pprint(cardFields(c))
 
 
-print c['id']
+
 
 
 
