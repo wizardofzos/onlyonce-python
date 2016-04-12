@@ -97,6 +97,7 @@ class OO():
             return response.json()
 
     def getField(self, card, field):
+        df = card['date']['model']
         if isinstance(df, list):
             for k in df:
                 return getField(k, field)
