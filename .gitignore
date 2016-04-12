@@ -1,2 +1,4 @@
 *.pyc
 *.tgz
+oopyconnector/oopyconnector.egg-info*
+oopyconnector/dist*

@@ -9,6 +9,42 @@
 import requests
 import datetime
 
+class OOCardParser():
+    '''Helper class for parsing of cards
+    '''
+
+    def findField(self, field, model):
+        '''Finds a field within a card or returns None
+        '''
+        if model.has_key('definitionName'):
+            if model['definitionName'] == field:
+                return model['value']
+        if model.has_key('components'):
+            for item in model['components']:
+                val = self.findField(field, item)
+                if val != None:
+                    return val
+
+    def getInfo(self, model, fields):
+        '''Retrieves all fields from a card. Fields should be speicifed as a list of 'strings'.
+        '''
+        res = {}
+        for field in fields:
+            res[field] = self.findField(field, model)
+        return res
+
+    def basicInfo(self, model):
+        '''Primed call to 'getInfo'. Returns a JSON :
+        {'first_name_field': '......',
+         'middle_name_field': '.....',
+         'last_name_field': '......',
+         'mobile_number': '......',
+         'email' : '.......'
+        }
+        '''
+        fields = ['first_name_field', 'middle_name_field', 'last_name_field', 'communication_mobtel1_field', 'communication_email1_field']
+        return self.getInfo(model, fields)
+        return res
 
 class OO():
 
@@ -95,22 +131,6 @@ class OO():
         response = requests.request("GET", self.apibase + "/cards/" + cardid, headers=headers)
         if response.status_code == 200:
             return response.json()
-
-    def getField(self, card, field):
-        df = card['date']['model']
-        if isinstance(df, list):
-            for k in df:
-                return getField(k, field)
-        else:
-            for key in df.keys():
-                print key
-                print df[key]
-                if key == 'definitionName':
-                    if df[key] == field:
-                        return df['value']
-                if isinstance(df['components'], list):
-                    return getField(df['components'],field)
-
 
     def register(self):
         self.apibase  = self.baseurl + "/" +  self.version

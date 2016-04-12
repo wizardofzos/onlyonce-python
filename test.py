@@ -1,7 +1,8 @@
-from oopyconnector import OO
+from oopyconnector import OO, OOCardParser
 
 import datetime
 import pprint
+import getpass
 pp = pprint.PrettyPrinter(indent=4)
 
 seckey = "your_very_secret_key"
@@ -22,12 +23,14 @@ print "Your API-Key   :",
 o.apikey=raw_input()
 print "Your API-Secret",
 o.apisec=raw_input()
+o.apisec = 'henrisec'
 o.register()
 print " - registered at OOAPI and received bearer token"
 cards = o.cards()
 print " - fetch all cards shared with me"
 
 keepgoing = True
+
 
 while keepgoing:
     pos = 0
@@ -41,19 +44,16 @@ while keepgoing:
         keepgoing = False
     else:
         p = int(p)
-        print "Need SecKey (shown)",
-        seckey = raw_input()
+        print "Need SecKey (not shown)",
+        seckey = getpass.getpass()
 
 
         c = o.card(cards[p]['id'],seckey)
+        print "-------------------- FULL JSON OF CARD DATA ----------------"
         pp.pprint(c)
-
-        pp.pprint(cardFields(c))
-
-
-
-
-
-
-
+        parser = OOCardParser()
+        print "-------------------- BASIC INFO FROM CARD (IF ANY)----------"
+        print parser.basicInfo(c['data']['model'][0])
+        print "<Enter> to continue"
+        a = raw_input()
 
