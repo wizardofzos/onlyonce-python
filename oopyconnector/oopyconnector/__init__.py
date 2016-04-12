@@ -96,21 +96,20 @@ class OO():
         if response.status_code == 200:
             return response.json()
 
-    def parseFields(self, c):
-        '''Recursive Parsing of all fields on a card'''
-        fields = []
-        for cc in c:
-            if cc.has_key('components'):
-                return (self.parseFields(cc['components']))
-            else:
-                fields.append(cc)
-        return fields
+    def getField(self, card, field):
+        if isinstance(df, list):
+            for k in df:
+                return getField(k, field)
+        else:
+            for key in df.keys():
+                print key
+                print df[key]
+                if key == 'definitionName':
+                    if df[key] == field:
+                        return df['value']
+                if isinstance(df['components'], list):
+                    return getField(df['components'],field)
 
-
-    def cardFields(self, c):
-        '''Return flat-JSON with all fields on card, their
-        type and their value'''
-        return parseFields(c['model'])
 
     def register(self):
         self.apibase  = self.baseurl + "/" +  self.version
