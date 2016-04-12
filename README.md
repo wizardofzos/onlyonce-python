@@ -42,18 +42,18 @@ _Version_ : **Draft**
 ---
 
 # Get Token
+Function : *register()* - **Get your JWT Bearer Token**
 
     oo.register()
 
-Function : *register()* - **Get your JWT Bearer Token**
 
 Make sure to set o.apikey and o.apisec before calling register(). The register function will set the Authorization Header in your request with the Bearer Token.
 
 # Get Cards
+Function : *cards()* - **Get all cards shared with you**
 
     oo.cards()
 
-Function : *cards()* - **Get all cards shared with you**
 
 Only callable after a succesful register(). It will return index of all cards shared with you. Returns a list of card-objects.
 
@@ -65,10 +65,10 @@ Only callable after a succesful register(). It will return index of all cards sh
 These can be read with card(id, seckey) sending your "Secret-Key" in the header of the request.
 
 # Get Card
+Function : *card(id, seckey)* - **Get the content of a card**
 
     card(id, seckey)
 
-Function : *card(id, seckey)* - **Get the content of a card**
 
 Only callable after succesful register(). It will return the card and it's model.
 
