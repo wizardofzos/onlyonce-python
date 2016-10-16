@@ -8,7 +8,7 @@ pp = pprint.PrettyPrinter(indent=4)
 seckey = "your_very_secret_key"
 o = OO()
 
-o.baseurl='http://apiteststand.onlyonce.com'
+o.baseurl='https://api.onlyonce.com'
 
 print "              _                            "
 print "   ___  _ __ | |_   _  ___  _ __   ___ ___ "
@@ -23,7 +23,6 @@ print "Your API-Key   :",
 o.apikey=raw_input()
 print "Your API-Secret",
 o.apisec=raw_input()
-o.apisec = 'henrisec'
 o.register()
 print " - registered at OOAPI and received bearer token"
 cards = o.cards()
@@ -53,7 +52,7 @@ while keepgoing:
         pp.pprint(c)
         parser = OOCardParser()
         print "-------------------- BASIC INFO FROM CARD (IF ANY)----------"
-        print parser.basicInfo(c['data']['model'][0])
+        print parser.getInfo(c['data']['model'][0],['company_street_name_field'])
         print "<Enter> to continue"
         a = raw_input()
 
