@@ -6,9 +6,9 @@
 
 _Author_ : **Henri Kuiper** 
 
-_Planned Official Release Date_   : **2016-04-01** 
+_Planned Official Release Date_   : **2017-01-01** 
 
-_Version_ : **Draft**
+_Version_ : 0.78.23, status: **Draft**
 
 
 
@@ -20,31 +20,29 @@ _Version_ : **Draft**
 
     from oopyconnector import OO
 
-    seckey = "your_very_secret_key"
+    
     o = OO()
 
-    o.apikey='apikey'
-    o.apisec='apisec'
+  
     o.baseurl='https://api.onlyonce.com'
+    o.username = os.environ.get('oouser')
+    o.password = os.environ.get('oopass')
 
-    o.register()
-    cards = o.cards()
 
-    for card in cards:
-        print "------%s" % card['name']
-        print "      %s (owner)       " % card['owner']
-        c = o.card(card['id'],seckey)
-        print "      %s" % c
-
+    o.signin()
+    profiles = o.profiles()
+    for profile in profiles:
+      all_cards = o.cards(profile=profile['id'])
+      
 ### Try it via
     make test
 ## Functions
 ---
 
 # Get Token
-Function : *register()* - **Get your JWT Bearer Token**
+Function : *signin()* - **Get your JWT Bearer Token**
 
-    oo.register()
+    oo.singin()
 
 
 Make sure to set o.apikey and o.apisec before calling register(). The register function will set the Authorization Header in your request with the Bearer Token.
@@ -65,12 +63,13 @@ Only callable after a succesful register(). It will return index of all cards sh
 These can be read with card(id, seckey) sending your "Secret-Key" in the header of the request.
 
 # Get Card
-Function : *card(id, seckey)* - **Get the content of a card**
+Function : *card(id)* - **Get the content of a card**
 
-    card(id, seckey)
+    card(id)
 
 
-Only callable after succesful register(). It will return the card and it's model.
+Only callable after succesful register() it requries the access_required endpoint too :)
+It will return the card and it's model.
 
     
 
