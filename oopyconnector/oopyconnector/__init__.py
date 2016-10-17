@@ -72,6 +72,7 @@ class OO():
     cardsReceived = []
 
     lastCardSync = None
+    profileAccessEnabled = False
 
     random_names = {}
 
@@ -146,6 +147,29 @@ class OO():
         else:
             return (datetime.datetime.now() - lastCardSync).seconds
 
+    def getAccess(self, profile=None):
+        '''Some endpoints require acccess. Access is granted if this endpoint is hit with a correct secret key for the
+        accompanying profile.
+        '''
+        if not self.seckey:
+            raise Exception, "You need to provide your secret key for us to enable access to your encrypted data"
+        if not profile:
+            raise Exception, "You need to specify a profile"
+        headers = {
+            'content-type': "application/json",
+            'Authorization': self.bearer,
+            'Secret-Key': self.seckey,
+            'cache-control': "no-cache"
+        }
+
+        response = requests.request("POST", self.apibase + "/profiles/" + profile + "/access", headers=headers)
+
+        if response.status_code == 200:
+            self.profileAccessEnabled = True
+
+        return True
+
+
     def cards(self, profile, scope='ACCEPTED', maxAge=60):
         self.apibase  = self.baseurl + "/" +  self.version
         '''Returns all cards shared with me. Saves API calls by not refreshing
@@ -198,19 +222,17 @@ class OO():
 
 
 
-    def card(self, cardid, seckey=None):
+    def card(self, profileid, cardid):
         '''Returns the full card JSON'''
-        if not seckey:
-            raise Exception, "You need to provide your secret key for us to decrypt your data"
+
         self.apibase  = self.baseurl + "/" +  self.version
         headers = {
             'content-type': "application/json",
             'authorization':  self.bearer,
-            'Secret-Key': seckey,
             'cache-control': "no-cache"
             }
 
-        response = requests.request("GET", self.apibase + "/cards/" + cardid, headers=headers)
+        response = requests.request("GET", self.apibase + "/profiles/" + profileid + "/cards/" + cardid, headers=headers)
         if response.status_code == 200:
             return response.json()
 
