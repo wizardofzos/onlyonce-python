@@ -320,12 +320,11 @@ class OO():
         self.getAccess(profileid) # for timing issues :)
         for card in self.cardsReceived:
             while threading.activeCount() > self.maxThreadCount:
-                print "Sleeping it off for 0.5 seconds (%3d)" % threading.activeCount()
-                time.sleep(0.1)
+                time.sleep(1)   # sleep it off lol. also fixes some timing issues :)
             threading.Thread(target=readCardThread, args=(card['id'], card['name'], profileid, self)).start()
 
         while threading.activeCount() > 1:
-            time.sleep(1)
+            time.sleep(1)   # make sure there are no more threads :)
 
 
         res = {}
