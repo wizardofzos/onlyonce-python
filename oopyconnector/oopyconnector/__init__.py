@@ -9,8 +9,14 @@
 
 import requests
 import datetime
+import logging
 
 import names
+
+logging.basicConfig(filename="oopyconnector.log", level=logging.DEBUG,format='%(asctime)s %(message)s')
+
+def debug(message):
+    logging.debug(message)
 
 def is_paginated(response_json):
     return not response_json['last']
@@ -30,16 +36,18 @@ class OOCardParser():
                 val = self.findField(field, item)
                 if val != None:
                     return val
+        else:
+            return None
 
-    def getInfo(self, model, fields):
+    def getInfo(self, card, fields):
         '''Retrieves all fields from a card. Fields should be speicifed as a list of 'strings'.
         '''
         res = {}
         for field in fields:
-            res[field] = self.findField(field, model)
+            res[field] = self.findField(field, card['model'][0])
         return res
 
-    def basicInfo(self, model):
+    def basicInfo(self, card):
         '''Primed call to 'getInfo'. Returns a JSON :
         {'first_name_field': '......',
          'middle_name_field': '.....',
@@ -49,8 +57,7 @@ class OOCardParser():
         }
         '''
         fields = ['first_name_field', 'middle_name_field', 'last_name_field', 'communication_mobtel1_field', 'communication_email1_field']
-        return self.getInfo(model, fields)
-        return res
+        return self.getInfo(card, fields)
 
 class OO():
 
@@ -78,6 +85,8 @@ class OO():
 
     def signin(self):
 
+        debug("Doing signin for user <%s>" % self.username)
+
 
         if not self.username:
             raise Exception, "Cannot signin without your username"
@@ -97,6 +106,37 @@ class OO():
         self.bearer = response.headers['Authorization']
         return True
 
+    def signout(self):
+        '''Returns public card for a profile'''
+        headers = {
+            'content-type': "application/json",
+            'cache-control': "no-cache",
+            'Authorization': self.bearer
+        }
+        response = requests.request("GET", self.apibase + "/signOut", headers=headers)
+        print "SIGNOUT: %s" % response
+
+
+    def datastore(self, profile=None):
+        '''return it, if there is a profile'''
+        self.getAccess(profile)
+        headers = {
+            'content-type': "application/json",
+            'cache-control': "no-cache",
+            'Authorization': self.bearer
+        }
+        response = requests.request("GET", self.apibase + "/profiles/%s/dataStore" % profile, headers=headers)
+        return response.json()
+
+    def profile(self, profileid):
+        '''Returns public card for a profile'''
+        headers = {
+            'content-type': "application/json",
+            'cache-control': "no-cache",
+            'Authorization': self.bearer
+        }
+        response = requests.request("GET", self.apibase + "/profiles/%s" % profileid, headers=headers)
+        return response.json()
 
     def profiles(self,scope='MINE'):
         '''Return profiles
@@ -121,10 +161,9 @@ class OO():
             profile['id'] = p['id']
             profile['ooid'] = p['onlyonceId']
             profile['type'] = p['type']
-            inc = p['incomingSharesCount']
-            out = p['outgoingSharesCount']
-            connections = inc + out
-            if inc > out:
+            profile['inc'] = p['incomingSharesCount']
+            profile['out'] = p['outgoingSharesCount']
+            if profile['inc'] > profile['out']:
                 profile['kind'] = 'CONSUMER'
             else:
                 profile['kind'] = 'PROVIDER'
@@ -225,6 +264,8 @@ class OO():
     def card(self, profileid, cardid):
         '''Returns the full card JSON'''
 
+        if not self.profileAccessEnabled:
+            self.getAccess(profileid)
         self.apibase  = self.baseurl + "/" +  self.version
         headers = {
             'content-type': "application/json",
@@ -235,27 +276,13 @@ class OO():
         response = requests.request("GET", self.apibase + "/profiles/" + profileid + "/cards/" + cardid, headers=headers)
         if response.status_code == 200:
             return response.json()
+        else:
+            raise Exception, "Cannot return card, decryption not possible. Secret-Key not sent via /access endpoint"
 
     def consolidated_view(self):
         '''Returns a list of all your network with all their cards mashed-up into one bit card
         '''
 
-    def register(self):
-        self.apibase  = self.baseurl + "/" +  self.version
-        if not self.apikey:
-            raise Exception, "Cannot connect without you API-key. Unable to register"
-        if not self.apisec:
-            raise Exception, "Cannot connect without you API-secret. Unable to register"
-
-        payload = "{\"apiSecret\" : \"" + self.apisec + "\",\n \"apiKey\" : \"" + self.apikey + "\"\n}"
-        headers = {
-            'content-type': "application/json",
-            'cache-control': "no-cache"
-        }
-
-        response = requests.request("POST", self.apibase + "/token", data=payload, headers=headers)
-        self.bearer = response.headers['Authorization']
-        return True
 
 
 
