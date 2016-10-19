@@ -1,4 +1,4 @@
-oopyconnector==0.5.81
+oopyconnector==0.86.00
 pkginfo==1.2.1
 requests==2.9.1
 requests-toolbelt==0.6.0
