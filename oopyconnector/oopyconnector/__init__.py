@@ -284,8 +284,8 @@ class OO():
 
 
     def getVirtualCards(self, profileid, fields=['first_name_field', 'last_name_field'], onlyifall=False):
-        '''Fills self.virtualCards with cards per network connection containing profileID and the fields as specified (default = firstName, lastName).
-        in the fields list.
+        '''Fills self.virtualCards with cards per network connection containing
+        the fields as specified (default = firstName, lastName).
 
         These virtual cards look like this:
         { '324234-234234-234243234':
