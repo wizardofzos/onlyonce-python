@@ -295,13 +295,12 @@ class OO():
           '4256774...
         }
 
-        The are returned as a list of these dictionary objects.
-
         In order to do so, we get ALL the cards shared with the selected profile and
-        decrypt those in a threaded (self.maxThreadCount threads) manner
+        decrypt those in a threaded (self.maxThreadCount threads) execution model.
+
         The result is then stored in self.virtualCards.
 
-        This then gets 'condensed' to contain only the requested fields per network connection.
+        This is 'condensed' as to contain only the requested fields per network connection.
 
         If 'onlyifall' is set to True any connections not sharing ALL FIELDS are dropped from the result.
         '''
