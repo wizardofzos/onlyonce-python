@@ -9,17 +9,19 @@
 
 import requests
 import datetime
-import logging
+import threading
+import time
 
-import names
 
-logging.basicConfig(filename="oopyconnector.log", level=logging.DEBUG,format='%(asctime)s %(message)s')
 
-def debug(message):
-    logging.debug(message)
 
 def is_paginated(response_json):
     return not response_json['last']
+
+
+
+
+
 
 class OOCardParser():
     '''Helper class for parsing of cards
@@ -75,8 +77,10 @@ class OO():
 
     bearer   = None
 
+    maxThreadCount = 30
     network  = []
     cardsReceived = []
+    virtualCards = []
 
     lastCardSync = None
     profileAccessEnabled = False
@@ -85,7 +89,6 @@ class OO():
 
     def signin(self):
 
-        debug("Doing signin for user <%s>" % self.username)
 
 
         if not self.username:
@@ -240,7 +243,7 @@ class OO():
                 self.cardsReceived = []
                 for card in j['content']:
                     c = {}
-#TODO make this a call to lookup the card (and cache it)
+                    #TODO make this a call to lookup the card (and cache it)
                     c['owner'] = card['ownerId']
                     c['name'] = card['name']
                     c['id'] = card['id']
@@ -277,11 +280,97 @@ class OO():
         if response.status_code == 200:
             return response.json()
         else:
-            raise Exception, "Cannot return card, decryption not possible. Secret-Key not sent via /access endpoint"
+            raise Exception, "Cannot return card, decryption not possible. Secret-Key not sent via /access endpoint? API status=%s" % response.status_code
 
-    def consolidated_view(self):
-        '''Returns a list of all your network with all their cards mashed-up into one bit card
+
+    def getVirtualCards(self, profileid, fields=['first_name_field', 'last_name_field'], onlyifall=False):
+        '''Fills self.virtualCards with cards per network connection containing profileID and the fields as specified (default = firstName, lastName).
+        in the fields list.
+
+        These virtual cards look like this:
+        { '324234-234234-234243234':
+          {  'first_name_field'   : 'John',
+             'last_name_field'    : 'Doe'
+          },
+          '4256774...
+        }
+
+        The are returned as a list of these dictionary objects.
+
+        In order to do so, we get ALL the cards shared with the selected profile and
+        decrypt those in a threaded (self.maxThreadCount threads) manner
+        The result is then stored in self.virtualCards.
+
+        This then gets 'condensed' to contain only the requested fields per network connection.
+
+        If 'onlyifall' is set to True any connections not sharing ALL FIELDS are dropped from the result.
         '''
+
+        if self.cardsReceived == []:
+            self.cards(profileid, scope='ACCEPTED')
+
+        def readCardThread(cardid, cardname, profileid,  oo):
+            try:
+                c = self.card(profileid, cardid)
+            except:
+                c = False     # to skip any decrypt/card-get errors :)
+            if c:
+                oo.virtualCards.append(c)
+
+        self.getAccess(profileid) # for timing issues :)
+        for card in self.cardsReceived:
+            while threading.activeCount() > self.maxThreadCount:
+                print "Sleeping it off for 0.5 seconds (%3d)" % threading.activeCount()
+                time.sleep(0.1)
+            threading.Thread(target=readCardThread, args=(card['id'], card['name'], profileid, self)).start()
+
+        while threading.activeCount() > 1:
+            time.sleep(1)
+
+
+        res = {}
+        ocp = OOCardParser()
+        for card in self.virtualCards:
+            bad_card = False
+            try:
+                data = ocp.getInfo(card, fields)
+            except:
+                bad_card = True
+            # For every field we have with data in the card, we add it to the global storage if it's not there already with that value
+            if not res.has_key(card['ownerId']):
+                '''If we have no virtual card for this connection, we create one :)
+                '''
+                res[card['ownerId']] = {}
+
+            for field in fields:
+                #TODO Fix naive implementation. This still not checks for other values (grouped fields issue!!!)
+                if not res[card['ownerId']].has_key(field):
+                    if not bad_card:
+                        if data[field] != None:
+                            res[card['ownerId']][field] = data[field]
+                else:
+                    if not bad_card:
+                        if res[card['ownerId']][field] != data[field] and data[field] != None:
+                                print "Eeek other value, fix this (%s <> %s)" % (res[card['ownerId']][field], data[field])
+
+
+        if onlyifall:
+            res2 = {}
+            for conn in res:
+                if len(fields) == len(res[conn]):
+                    res2[conn] = res[conn]
+            return res2
+        else:
+            return res
+
+
+
+
+
+
+
+
+
 
 
 
