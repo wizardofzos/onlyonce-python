@@ -29,10 +29,15 @@ class OOCardParser():
 
     def findField(self, field, model):
         '''Finds a field within a card or returns None
+        Can also return "wrappers" (like jobs_group_wrapper)
         '''
         if model.has_key('definitionName'):
             if model['definitionName'] == field:
-                return model['value']
+                flds = field.split('_')
+                if flds[len(flds)-1] == 'wrapper':
+                    return model['components']
+                else:
+                    return model['value']
         if model.has_key('components'):
             for item in model['components']:
                 val = self.findField(field, item)
@@ -88,9 +93,6 @@ class OO():
     random_names = {}
 
     def signin(self):
-
-
-
         if not self.username:
             raise Exception, "Cannot signin without your username"
         if not self.password:
@@ -309,6 +311,7 @@ class OO():
             self.cards(profileid, scope='ACCEPTED')
 
         def readCardThread(cardid, cardname, profileid,  oo):
+            print "Another Thread....."
             try:
                 c = self.card(profileid, cardid)
             except:
@@ -361,17 +364,50 @@ class OO():
         else:
             return res
 
+    def birthdaylist(self, profileid):
+        '''Returns list of :
+        {   'first_name_field' : 'John',
+                                'last_name_field'  : 'Doe',
+                                'date_of_birth'    : '1976-06-12'
+        }
 
 
+        This is is sorted on 'next upcoming' birthays (determined from today)
+        '''
 
+        if not self.bearer:
+            raise Exception, "Cannot create birthdaylist, call signin() first."
 
+        if not self.seckey:
+            raise Exception, "Secret Key needed."
 
+        self.getAccess(profileid)
+        blist = []
+        bdaycards = self.getVirtualCards(profileid, fields=['first_name_field', 'last_name_field', 'date_of_birth_field'], onlyifall=True)
+        for bd in bdaycards:
+            blist.append(bdaycards[bd])
 
+        # we need to 'add' birthdate
+        for bd in blist:
+            dd = bd['date_of_birth_field'].split('-')
+            bd['birthdate'] = dd[1] + "-" + dd[0]
+        from operator import itemgetter
+        upcoming = sorted(bd, key=itemgetter('birthdate'))
 
+        import datetime
+        today = datetime.date.today()
+        lookfor = "%02d-%02d" % (today.month, today.day)
 
+        n = []
+        p = []
 
-
-
-
+        for b in upcoming:
+            if b['birthdate'] >= lookfor:
+                n.append(b)
+            else:
+                p.append(b)
+        for i in p:
+            n.append(i)
+        return n
 
 
