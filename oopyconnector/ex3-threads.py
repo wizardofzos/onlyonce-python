@@ -56,10 +56,14 @@ print ""
 print "Select profile to work with: ",
 prof = raw_input()
 
-print "---- using onlyifall ----"
-l = ['first_name_field', 'last_name_field', 'job_position_field']
+print "---- not using onlyifall ----"
+l = ['first_name_field', 'last_name_field', 'primary_twitter_field']
 print "Getting contacts who share these fields with me %s" % l
 
 virtualcards = o.getVirtualCards(pids[int(prof)],l,onlyifall=True)
 pp.pprint(virtualcards)
+
+
+print "Now the builtin list"
+bd = o.birthdaylist(pids[int(prof)])
 
