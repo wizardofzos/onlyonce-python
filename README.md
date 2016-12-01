@@ -74,5 +74,8 @@ Only callable after succesful register() it requries the access_required endpoin
 It will return the card and it's model.
 
     
+# Threaded Sync
+Function : *getVirtualCards(_profile_, list_of_fields)* - ** Get consolidated view of network **
 
+    l = ['first_name_field', 'last_name_field', "]
 
