@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='oopyconnector',
-      version='0.86.00',
+      version='0.87.00',
       description='Python wrapper for the Only Once API',
       url='http://github.com/wizardofzos/onlyonce-python',
       author='Henri Kuiper',

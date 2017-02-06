@@ -284,6 +284,22 @@ class OO():
         else:
             raise Exception, "Cannot return card, decryption not possible. Secret-Key not sent via /access endpoint? API status=%s" % response.status_code
 
+    def getRequests(self, profileid, reqtype=None, status=None):
+        if not self.profileAccessEnabled:
+            self.getAccess(profileid)
+        self.apibase  = self.baseurl + "/" +  self.version
+        headers = {
+            'content-type': "application/json",
+            'authorization':  self.bearer,
+            'cache-control': "no-cache"
+            }
+
+        response = requests.request("GET", self.apibase + "/profiles/" + profileid + "/requests?&statuses=" + status + "&type=" + reqtype, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise Exception, "Cannot return card-requests. API status=%s" % response.status_code
+
 
     def getVirtualCards(self, profileid, fields=['first_name_field', 'last_name_field'], onlyifall=False):
         '''Fills self.virtualCards with cards per network connection containing
