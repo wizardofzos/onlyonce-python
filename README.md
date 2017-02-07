@@ -6,7 +6,7 @@
 
 _Author_ : **Henri Kuiper** 
 
-_Planned Official Release Date_   : **2017-01-01** 
+_Planned Official Release Date_   : **2017-04-01** 
 
 _Version_ : 0.78.23, status: **Draft**
 
