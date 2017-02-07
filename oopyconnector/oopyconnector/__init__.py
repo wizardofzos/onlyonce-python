@@ -11,6 +11,7 @@ import requests
 import datetime
 import threading
 import time
+import json
 
 
 
@@ -382,6 +383,7 @@ class OO():
 
 
     def acceptRequest(self, requestID):
+        print requestID
         if not self.profileAccessEnabled:
             self.getAccess(profileid)
         self.apibase  = self.baseurl + "/" +  self.version
@@ -392,11 +394,11 @@ class OO():
             }
         data = {"ids":[requestID]}
 
-        response = requests.request("GET", self.apibase + "/requests/accept", data=json.dumps(data), headers=headers)
+        response = requests.request("POST", self.apibase + "/requests/accept", data=json.dumps(data), headers=headers)
         if response.status_code == 200:
-            return response.json()
+            return True
         else:
-            raise Exception, "Cannot return card-requests. API status=%s" % response.status_code
+            raise Exception, "Cannot accept card-requests. API status=%s" % response.status_code
 
     def birthdaylist(self, profileid):
         '''Returns list of :
