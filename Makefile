@@ -1,5 +1,5 @@
 test:
-	python test.py
+	cd oopyconnector && python ../test.py
 
 
 dist:
