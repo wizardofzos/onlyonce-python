@@ -18,7 +18,7 @@ print ""
 print " Command line demonstration of the OO-API  "
 print ""
 
-import oopyconnector
+from oopyconnector import OO
 
 o = OO()
 

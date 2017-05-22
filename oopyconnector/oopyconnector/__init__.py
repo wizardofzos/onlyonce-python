@@ -25,7 +25,9 @@ def is_paginated(response_json):
 
 
 class OOCardParser():
-    '''Helper class for parsing of cards
+    '''Helper class for parsing of cards, seeing as we finally have 
+    an endpoint to accomodate for a consolidated view, we no longer
+    maintain this class :)
     '''
 
     def findField(self, field, model):
@@ -121,7 +123,6 @@ class OO():
         }
         response = requests.request("GET", self.apibase + "/signOut", headers=headers)
         print "SIGNOUT: %s" % response
-
 
     def datastore(self, profile=None):
         '''return it, if there is a profile'''
@@ -265,7 +266,28 @@ class OO():
                 connections.append(card['owner'])
         return connections
 
-
+    def consolidated(self, profileId, fieldNames=['first_name_field', 'last_name_field'], specific=None, haveall=None, page=0):
+        '''Returns a consended view of a specific profileID. If no specific is set the 
+        consoliated view of the full network is returned (paginated).
+        '''
+        if not self.profileAccessEnabled:
+            self.getAccess(profileId)
+        self.apibase = self.baseurl + "/" + self.version
+        headers = {
+            'content-type': "application/json",
+            'authorization':  self.bearer,
+            'cache-control': "no-cache"
+            }
+        querystring = { 
+            "profileId": profileId,
+            "fieldNames": fieldNames,
+            "page": page
+        }
+        response = requests.request("GET", self.apibase + "/profiles/consolidated", headers=headers, params=querystring)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise Exception, "Edpoit returns HTTP-" + str(response.status_code)
 
     def card(self, profileid, cardid):
         '''Returns the full card JSON'''
