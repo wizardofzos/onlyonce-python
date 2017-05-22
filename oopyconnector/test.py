@@ -1,6 +1,8 @@
-from oopyconnector import OO, OOCardParser
+from oopyconnector import OO
 import os
 import pprint
+import json
+import datetime
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -12,23 +14,41 @@ print " | (_) | | | | | |_| | (_) | | | | (_|  __/"
 print "  \___/|_| |_|_|\__, |\___/|_| |_|\___\___|"
 print "                |___/                      "
 print ""
-print " Command line demonstration of the OO-API  "
+print " testing oopyconnector                     "
+print ""
+print " make sure to set oouser, oopass and oosec "
+print " we know it's annoying to set the secret   "
+print " before you an select the profile, but hey,"
+print " security > usability :)                   "
 print ""
 
-
-
-
+def show(consolidated, *args, **kwargs):
+    # print consolidated
+    for c in consolidated['content']:
+        for key in c.keys():
+            fname = unicode(c[key]['first_name_field']).encode('utf8')
+            if c[key]['middle_name_field']:
+                mname = unicode(c[key]['middle_name_field']).encode('utf8')
+            else:
+                mname = None
+            lname = unicode(c[key]['last_name_field']).encode('utf8')
+            email = unicode(c[key]['communication_email1_field']).encode('utf8')
+            print "fname: " + fname
+            if mname:
+                print "mname: " + mname
+            print "lname: " + lname
+            print "email: " + email
 o = OO()
-ocp = OOCardParser()
 
 o.baseurl = 'https://api.onlyonce.com'
+
 if os.environ.get('oouser') and os.environ.get('oopass') and os.environ.get('oosec'):
     print "Using credentials as specified in ENV"
     o.username = os.environ.get('oouser')
     o.password = os.environ.get('oopass')
     o.seckey = os.environ.get('oosec')
 else:
-    raise Exception, "Cannot Continue. You need to specify oouser, oopass and oosec as environment variables"
+    raise Exception, "Cannot Continue. You need to specify oouser, oopass and oosec as environment variables. We did tell you so :)"
 
 o.signin()
 
@@ -56,51 +76,33 @@ print ""
 print "Select profile to work with: ",
 prof = raw_input()
 
-print ""
-print "----------------"
-print ""
 
-#datastore = o.datastore(profile=pids[int(prof)])
-#pp.pprint(datastore)
-
+fields = [ "first_name_field", "middle_name_field", "last_name_field",
+           "communication_email1_field",
+           "date_of_birth_field",
+           "trade_name_field"]
 
 
-all_cards = o.cards(profile=pids[int(prof)])
-i = 0
-cards = []
+consolidated = o.consolidated(profileId=pids[int(prof)], fieldNames=fields)
+fetched = len(consolidated['content'])
+print "Retrieved first page, executing GoogleSync %s fetched" % fetched
+show(consolidated)
 
-# Nice "blackmagic" to sort the list of json-objects on a specified key
-from operator import itemgetter
-all_cards = sorted(all_cards, key=itemgetter('owner'))
+page = 0
+res = consolidated['content']
+while not consolidated['last']:
+
+    page += 1
+    print "Next page..."
+    consolidated = o.consolidated(profileId=pids[int(prof)], fieldNames=fields, page=page)
+    fetched += len(consolidated['content'])
+    show(consolidated)
+    res.append(consolidated['content'])
+
+print "All %s results parsed!!!" % fetched
 
 
-for c in all_cards:
-    cards.append(c['id'])
-    owningProfile = o.profile(c['owner'])
-    print "%s) %s/#%s [%s]" % (i, owningProfile['name'], owningProfile['onlyonceId'],c['name'])
-    card = o.card(profileid = pids[int(prof)], cardid = c['id'])
-    #try:
-    #    pp.pprint(card)
-    #except:
-    #    print "eeek"
-    print('------')
-    #pp.pprint(ocp.basicInfo(card))
-    ##pp.pprint(ocp.getInfo(card,['job_position_field']))
-    i += 1
 
-print ""
-print "----"
-print ""
-
-print "You have a total of %s cards" % len(cards)
-
-print "What card to print?"
-cd = raw_input()
-
-print o.card(pids[int(prof)], cards[int(cd)])
-print "Compressing your cards to create consolidated view of your network"
-
-print "Make sure we access enable the profile"
 
 
 
