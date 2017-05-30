@@ -1,11 +1,6 @@
-# oopyconnector : python framework for connecting to the Only Once API
-#
-#
-# Author(s)     :   - Henri Kuiper (henri.kuiper@onlyonce.com)
-
-#
-#
-# Version       : 2.0beta
+'''
+oopyconnector : python wrapper for the Only Once public API
+'''
 
 import requests
 import datetime
@@ -25,7 +20,7 @@ def is_paginated(response_json):
 
 
 class OOCardParser():
-    '''Helper class for parsing of cards, seeing as we finally have 
+    '''Helper class for parsing of cards, seeing as we finally have
     an endpoint to accomodate for a consolidated view, we no longer
     maintain this class :)
     '''
@@ -145,13 +140,15 @@ class OO():
         response = requests.request("GET", self.apibase + "/profiles/%s" % profileid, headers=headers)
         return response.json()
 
-    def profiles(self,scope='MINE'):
+    def profiles(self,scope=None):
         '''Return profiles
         scope = MINE (Default) All profiles owned by the authenitcated user
         scope = BOOKMARKS All bookmarked profiles
         scope = CONNECTIONS All profiles sharing data with, or receiving data from
         '''
-
+        if scope is None:
+            scope = "MINE"
+        
         if not self.bearer:
             raise Exception, "No bearer token present, use signin first"
         headers = {
@@ -266,8 +263,8 @@ class OO():
                 connections.append(card['owner'])
         return connections
 
-    def consolidated(self, profileId, fieldNames=['first_name_field', 'last_name_field'], specific=None, haveall=None, page=0):
-        '''Returns a consended view of a specific profileID. If no specific is set the 
+    def consolidated(self, profileId, fieldNames=['first_name_field', 'last_name_field'], specific=None, haveall=None, page=0, size=100):
+        '''Returns a consended view of a specific profileID. If no specific is set the
         consoliated view of the full network is returned (paginated).
         '''
         if not self.profileAccessEnabled:
@@ -278,9 +275,10 @@ class OO():
             'authorization':  self.bearer,
             'cache-control': "no-cache"
             }
-        querystring = { 
+        querystring = {
             "profileId": profileId,
             "fieldNames": fieldNames,
+            "size": size,
             "page": page
         }
         response = requests.request("GET", self.apibase + "/profiles/consolidated", headers=headers, params=querystring)
